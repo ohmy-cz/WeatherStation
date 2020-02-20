@@ -1,0 +1,10 @@
+﻿{
+  "profiles": {
+    "net.jancerveny.weatherstation.WorkerService": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
