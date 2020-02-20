@@ -27,7 +27,7 @@ namespace net.jancerveny.weatherstation.DataLayer
 
                 entity.Property(e => e.Id)
                     .HasColumnName("id")
-                    .ValueGeneratedNever();
+                    .ValueGeneratedOnAdd();
 
                 entity.Property(e => e.SensorId).HasColumnName("sensor_id");
 

@@ -21,7 +21,10 @@ namespace net.jancerveny.weatherstation
 		{
 			services.AddDbContext<DataLayer.DbContext>(options =>
 				options.UseNpgsql(Configuration.GetConnectionString("Db")));
-			services.AddControllersWithViews();
+			var mvc = services.AddControllersWithViews();
+#if DEBUG
+				mvc.AddRazorRuntimeCompilation();
+#endif
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
