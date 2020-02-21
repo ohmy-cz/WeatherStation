@@ -24,14 +24,14 @@ namespace net.jancerveny.weatherstation.Controllers
 
 		public IActionResult Index()
 		{
-			var temperature = new Temperatures
-			{
-				SensorId = 1,
-				Temperature = 3000,
-				Timestamp = DateTime.Now
-			};
-			_db.Temperatures.Add(temperature);
-			_db.SaveChanges();
+			//var temperature = new Temperatures
+			//{
+			//	SensorId = 1,
+			//	Temperature = 3000,
+			//	Timestamp = DateTime.Now
+			//};
+			//_db.Temperatures.Add(temperature);
+			//_db.SaveChanges();
 
 			return View();
 		}
