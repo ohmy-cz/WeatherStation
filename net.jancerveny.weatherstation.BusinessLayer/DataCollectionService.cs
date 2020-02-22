@@ -15,13 +15,13 @@ namespace net.jancerveny.weatherstation.BusinessLayer
 	/// <summary>
 	/// Class that gathers methods to fetch new data from different sources
 	/// </summary>
-	public class DataCollection
+	public class DataCollectionService
 	{
 		private readonly PhilipsHueConfiguration _config;
-		private readonly ILogger<DataCollection> _logger;
+		private readonly ILogger<DataCollectionService> _logger;
 		private readonly ILocalHueClient _hueClient;
 		private readonly DbContextOptions<WeatherDbContext> _dbOptions;
-		public DataCollection(ILogger<DataCollection> logger, PhilipsHueConfiguration config, DbContextOptions<WeatherDbContext> dbOptions)
+		public DataCollectionService(ILogger<DataCollectionService> logger, PhilipsHueConfiguration config, DbContextOptions<WeatherDbContext> dbOptions)
 		{
 			if (logger == null) throw new ArgumentNullException(nameof(logger));
 			if (config == null) throw new ArgumentNullException(nameof(config));
@@ -38,7 +38,7 @@ namespace net.jancerveny.weatherstation.BusinessLayer
 			{
 				try
 				{
-					var temperatures = new List<Temperatures>();
+					var temperatures = new List<Measurement>();
 					var hueTemps = await FetchPhilipsHueSensorsAsync();
 					if (hueTemps != null)
 					{
@@ -53,7 +53,7 @@ namespace net.jancerveny.weatherstation.BusinessLayer
 					_logger.LogInformation($"Amount of temperatures: {temperatures.Count()}");
 					if (temperatures.Count > 0)
 					{
-						db.Temperatures.AddRange(temperatures);
+						db.Measurements.AddRange(temperatures);
 						return db.SaveChanges() > 0;
 					}
 				} 
@@ -65,19 +65,18 @@ namespace net.jancerveny.weatherstation.BusinessLayer
 			}
 		}
 
-		private async Task<IReadOnlyCollection<Temperatures>> FetchPhilipsHueSensorsAsync()
+		private async Task<IReadOnlyCollection<Measurement>> FetchPhilipsHueSensorsAsync()
 		{
 			_logger.LogInformation("Fetching information from Philips Hue Sensors");
 			var sensors =  await _hueClient.GetSensorsAsync();
-			return sensors.Where(x => x.State.Temperature != null).Select(x => new Temperatures { 
-				SensorId = int.Parse(x.Id),
-				Source = SourceTypeEnum.PhilipsHue,
+			return sensors.Where(x => x.State.Temperature != null).Select(x => new Measurement { 
+				SourceId = int.Parse(x.Id),
 				Temperature = x.State.Temperature.Value,
 				Timestamp = DateTime.Now
 			}).ToList();
 		}
 
-		private async Task<IReadOnlyCollection<Temperatures>> FetchRaspberryPiAsync()
+		private async Task<IReadOnlyCollection<Measurement>> FetchRaspberryPiAsync()
 		{
 			_logger.LogInformation("Fetching information from Raspberry PI");
 			if (Environment.OSVersion.Platform == PlatformID.Unix)
@@ -86,17 +85,15 @@ namespace net.jancerveny.weatherstation.BusinessLayer
 				double.TryParse(await "/opt/vc/bin/vcgencmd measure_temp | grep -o -E '[0-9.]+'".BashAsync(), out double gpuTemp);
 
 				var now = DateTime.Now;
-				return new List<Temperatures> {
-					new Temperatures {
-						SensorId = -2, // = CPU
+				return new List<Measurement> {
+					new Measurement {
+						SourceId = -2, // = CPU
 						Temperature = cpuTemp / 10,
-						Source = SourceTypeEnum.RaspberryPi,
 						Timestamp = now
 					},
-					new Temperatures {
-						SensorId = -3, // = GPU
+					new Measurement {
+						SourceId = -3, // = GPU
 						Temperature = (int)(gpuTemp * 100),
-						Source = SourceTypeEnum.RaspberryPi,
 						Timestamp = now
 					}
 				};

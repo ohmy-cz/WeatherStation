@@ -7,20 +7,20 @@ using System.Linq;
 
 namespace net.jancerveny.weatherstation.BusinessLayer
 {
-	public class DataReadings
+	public class DataReadingsService
 	{
 		private readonly DbContextOptions<WeatherDbContext> _dbOptions;
-		public DataReadings(DbContextOptions<WeatherDbContext> dbOptions)
+		public DataReadingsService(DbContextOptions<WeatherDbContext> dbOptions)
 		{
 			if (dbOptions == null) throw new ArgumentNullException(nameof(dbOptions));
 			_dbOptions = dbOptions;
 		}
 
-		public IReadOnlyCollection<Temperatures> GetReadings()
+		public IReadOnlyCollection<Measurement> GetReadings()
 		{
 			using (var db =  new WeatherDbContext(_dbOptions))
 			{
-				return db.Temperatures.ToList();
+				return db.Measurements.ToList();
 			}
 		}
     }

@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using net.jancerveny.weatherstation.Common.Models;
+using System.Text.Json;
 
 namespace net.jancerveny.weatherstation.DataLayer
 {
@@ -13,7 +15,9 @@ namespace net.jancerveny.weatherstation.DataLayer
         {
         }
 
-        public virtual DbSet<Models.Temperatures> Temperatures { get; set; }
+        public virtual DbSet<Models.DataSource> DataSources { get; set; }
+        public virtual DbSet<Models.Measurement> Measurements { get; set; }
+        public virtual DbSet<Models.AggregatedMeasurement> AggregatedMeasurements { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -21,20 +25,45 @@ namespace net.jancerveny.weatherstation.DataLayer
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Models.Temperatures>(entity =>
+            modelBuilder.Entity<Models.DataSource>(entity =>
             {
-                entity.ToTable("temperatures", "Weather");
+                entity.ToTable("data_sources", "Weather");
 
                 entity.Property(e => e.Id)
-                    .HasColumnName("id")
                     .ValueGeneratedOnAdd();
 
-                entity.Property(e => e.SensorId).HasColumnName("sensor_id");
+                entity.Property(e => e.Created)
+                    .HasColumnType("timestamp with time zone");
 
-                entity.Property(e => e.Temperature).HasColumnName("temperature");
+                entity.Property(e => e.LastRead)
+                    .HasColumnType("timestamp with time zone");
+
+                entity.Property(e => e.Color)
+                    .HasConversion(
+                        v => JsonSerializer.Serialize(v, new JsonSerializerOptions { IgnoreNullValues = true }),
+                        v => JsonSerializer.Deserialize<ColorRGBA>(v, new JsonSerializerOptions { IgnoreNullValues = true })
+                    );
+            });
+
+            modelBuilder.Entity<Models.Measurement>(entity =>
+            {
+                entity.ToTable("measurements", "Weather");
+
+                entity.Property(e => e.Id)
+                    .ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Timestamp)
-                    .HasColumnName("timestamp")
+                    .HasColumnType("timestamp with time zone");
+            });
+
+            modelBuilder.Entity<Models.AggregatedMeasurement>(entity =>
+            {
+                entity.ToTable("aggregated_measurements", "Weather");
+
+                entity.Property(e => e.Id)
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.Timestamp)
                     .HasColumnType("timestamp with time zone");
             });
 

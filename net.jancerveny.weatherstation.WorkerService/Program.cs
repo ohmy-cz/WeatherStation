@@ -5,6 +5,7 @@ using net.jancerveny.weatherstation.BusinessLayer;
 using net.jancerveny.weatherstation.Common.Helpers;
 using net.jancerveny.weatherstation.Common.Models;
 using net.jancerveny.weatherstation.DataLayer;
+using net.jancerveny.weatherstation.WorkerService.Models;
 
 namespace net.jancerveny.weatherstation.WorkerService
 {
@@ -31,9 +32,15 @@ namespace net.jancerveny.weatherstation.WorkerService
 					var philipsHueConfig = new PhilipsHueConfiguration();
 					hostContext.Configuration.GetSection("PhilipsHue").Bind(philipsHueConfig);
 					services.AddSingleton(philipsHueConfig);
+					var serviceConfig = new ServiceConfiguration();
+					hostContext.Configuration.GetSection("Service").Bind(serviceConfig);
+					services.AddSingleton(serviceConfig);
 					services.AddSingleton(Database.GetDbContextOptions<WeatherDbContext>(hostContext.Configuration.GetConnectionString("Db")));
-					services.AddSingleton<DataCollection>();
-					services.AddHostedService<Worker>();
+					services.AddSingleton<DataCollectionService>();
+					services.AddSingleton<DataAggregationService>();
+					services.AddSingleton<DataSourcesService>();
+					services.AddHostedService<DataCollectionWorker>();
+					services.AddHostedService<DataAggregationWorker>();
 				});
 	}
 }
