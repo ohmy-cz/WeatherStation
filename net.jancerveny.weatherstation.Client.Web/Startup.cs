@@ -4,6 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using net.jancerveny.weatherstation.BusinessLayer;
+using net.jancerveny.weatherstation.Common.Helpers;
+using net.jancerveny.weatherstation.DataLayer;
 
 namespace net.jancerveny.weatherstation
 {
@@ -19,8 +22,11 @@ namespace net.jancerveny.weatherstation
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			services.AddDbContext<DataLayer.DbContext>(options =>
-				options.UseNpgsql(Configuration.GetConnectionString("Db")));
+			//services.AddDbContext<WeatherDbContext>(options =>
+			//	options.UseNpgsql(Configuration.GetConnectionString("Db")));
+			services.AddSingleton(Database.GetDbContextOptions<WeatherDbContext>(Configuration.GetConnectionString("Db")));
+			services.AddSingleton<DataSources>();
+			services.AddSingleton<DataReadings>();
 			var mvc = services.AddControllersWithViews();
 #if DEBUG
 				mvc.AddRazorRuntimeCompilation();

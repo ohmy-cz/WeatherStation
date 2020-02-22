@@ -1,8 +1,10 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using net.jancerveny.weatherstation.BusinessLayer;
+using net.jancerveny.weatherstation.Common.Helpers;
+using net.jancerveny.weatherstation.Common.Models;
+using net.jancerveny.weatherstation.DataLayer;
 
 namespace net.jancerveny.weatherstation.WorkerService
 {
@@ -26,8 +28,10 @@ namespace net.jancerveny.weatherstation.WorkerService
 				})
 				.ConfigureServices((hostContext, services) =>
 				{
-					services.AddDbContext<DataLayer.DbContext>(options =>
-						options.UseNpgsql(hostContext.Configuration.GetConnectionString("Db")));
+					var philipsHueConfig = new PhilipsHueConfiguration();
+					hostContext.Configuration.GetSection("PhilipsHue").Bind(philipsHueConfig);
+					services.AddSingleton(philipsHueConfig);
+					services.AddSingleton(Database.GetDbContextOptions<WeatherDbContext>(hostContext.Configuration.GetConnectionString("Db")));
 					services.AddSingleton<DataCollection>();
 					services.AddHostedService<Worker>();
 				});

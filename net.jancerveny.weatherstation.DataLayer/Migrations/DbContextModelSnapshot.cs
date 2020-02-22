@@ -8,7 +8,7 @@ using net.jancerveny.weatherstation.DataLayer;
 
 namespace net.jancerveny.weatherstation.DataLayer.Migrations
 {
-    [DbContext(typeof(DbContext))]
+    [DbContext(typeof(WeatherDbContext))]
     partial class DbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

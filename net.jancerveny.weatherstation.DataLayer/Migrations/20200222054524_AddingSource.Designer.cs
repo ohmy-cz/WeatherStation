@@ -9,7 +9,7 @@ using net.jancerveny.weatherstation.DataLayer;
 
 namespace net.jancerveny.weatherstation.DataLayer.Migrations
 {
-    [DbContext(typeof(DbContext))]
+    [DbContext(typeof(WeatherDbContext))]
     [Migration("20200222054524_AddingSource")]
     partial class AddingSource
     {

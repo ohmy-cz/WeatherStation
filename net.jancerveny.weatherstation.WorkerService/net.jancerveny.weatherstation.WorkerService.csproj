@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\net.jancerveny.weatherstation.BusinessLayer\net.jancerveny.weatherstation.BusinessLayer.csproj" />
+    <ProjectReference Include="..\net.jancerveny.weatherstation.Common\net.jancerveny.weatherstation.Common.csproj" />
     <ProjectReference Include="..\net.jancerveny.weatherstation.DataLayer\net.jancerveny.weatherstation.DataLayer.csproj" />
   </ItemGroup>
 </Project>

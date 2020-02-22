@@ -2,13 +2,13 @@
 
 namespace net.jancerveny.weatherstation.DataLayer
 {
-    public partial class DbContext : Microsoft.EntityFrameworkCore.DbContext
+    public partial class WeatherDbContext : Microsoft.EntityFrameworkCore.DbContext
     {
-        public DbContext()
+        public WeatherDbContext()
         {
         }
 
-        public DbContext(DbContextOptions<DbContext> options)
+        public WeatherDbContext(DbContextOptions<WeatherDbContext> options)
             : base(options)
         {
         }

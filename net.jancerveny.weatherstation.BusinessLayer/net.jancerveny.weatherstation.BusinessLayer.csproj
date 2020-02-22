@@ -9,4 +9,9 @@
     <PackageReference Include="Q42.HueApi" Version="3.15.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\net.jancerveny.weatherstation.Common\net.jancerveny.weatherstation.Common.csproj" />
+    <ProjectReference Include="..\net.jancerveny.weatherstation.DataLayer\net.jancerveny.weatherstation.DataLayer.csproj" />
+  </ItemGroup>
+
 </Project>

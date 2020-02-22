@@ -1,11 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using net.jancerveny.weatherstation.BusinessLayer;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace net.jancerveny.weatherstation.WorkerService
 {
@@ -28,6 +26,7 @@ namespace net.jancerveny.weatherstation.WorkerService
 			{
 				_logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
 				await _dc.FetchSensorsAsync();
+				// TODO: Aggregation service
 				var intervalSeconds = 5 * 60 * 1000;
 #if DEBUG
 				intervalSeconds = 60 * 1000;
