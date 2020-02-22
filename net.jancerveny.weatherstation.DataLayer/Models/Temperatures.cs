@@ -11,5 +11,6 @@ namespace net.jancerveny.weatherstation.DataLayer.Models
         public DateTime Timestamp { get; set; }
         public int SensorId { get; set; }
         public int Temperature { get; set; }
+        public SourceTypeEnum Source { get; set; }
     }
 }

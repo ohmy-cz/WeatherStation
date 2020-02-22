@@ -7,5 +7,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="3.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\net.jancerveny.weatherstation.BusinessLayer\net.jancerveny.weatherstation.BusinessLayer.csproj" />
+    <ProjectReference Include="..\net.jancerveny.weatherstation.DataLayer\net.jancerveny.weatherstation.DataLayer.csproj" />
   </ItemGroup>
 </Project>
