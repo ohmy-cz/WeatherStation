@@ -182,7 +182,7 @@ namespace net.jancerveny.weatherstation.BusinessLayer
 			return sensors.Where(x => x.State.Temperature != null).Select(x => new Measurement { 
 				SourceId = int.Parse(x.Id),
 				Temperature = x.State.Temperature.Value,
-				Timestamp = x.State.Lastupdated ?? DateTime.Now
+				Timestamp = x.State.Lastupdated?.ToLocalTime() ?? DateTime.Now
 			}).ToList();
 		}
 
