@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using net.jancerveny.weatherstation.BusinessLayer;
+using net.jancerveny.weatherstation.Common.Models;
 using System;
+using System.Threading.Tasks;
 
 namespace net.jancerveny.weatherstation.Client.Web.Controllers
 {
@@ -17,16 +19,21 @@ namespace net.jancerveny.weatherstation.Client.Web.Controllers
             _ds = ds;
         }
 
-        public IActionResult GetReadings()
+        public async Task<IActionResult> GetReadings(DateTime? since = null)
         {
-            var result = _dr.GetReadings();
+            var result = await _dr.GetReadingsAsync(RealtimeChartConfiguration.Labels.Length, since);
             return Ok(result);
         }
 
-        public IActionResult GetDataSources()
+        public async Task<IActionResult> GetDataSources()
         {
-            var result = _ds.GetAll();
+            var result = await _ds.GetAllAsync();
             return Ok(result);
+        }
+
+        public IActionResult GetChartConfig()
+        {
+            return Ok(RealtimeChartConfiguration.Labels);
         }
     }
 }

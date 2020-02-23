@@ -8,13 +8,14 @@ using System.Threading.Tasks;
 
 namespace net.jancerveny.weatherstation.WorkerService
 {
-	public class DataAggregationWorker : BackgroundService
+	public class DataAggregationWorker : IHostedService, IDisposable
 	{
-		private readonly ILogger<DataCollectionWorker> _logger;
+		private readonly ILogger<DataAggregationWorker> _logger;
 		private readonly DataAggregationService _da;
 		private readonly ServiceConfiguration _sc;
+		private Timer _timer;
 
-		public DataAggregationWorker(ILogger<DataCollectionWorker> logger, DataAggregationService da, ServiceConfiguration sc)
+		public DataAggregationWorker(ILogger<DataAggregationWorker> logger, DataAggregationService da, ServiceConfiguration sc)
 		{
 			if (logger == null) throw new ArgumentNullException(nameof(logger));
 			if (da == null) throw new ArgumentNullException(nameof(da));
@@ -24,18 +25,36 @@ namespace net.jancerveny.weatherstation.WorkerService
 			_sc = sc;
 		}
 
-		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+		public Task StartAsync(CancellationToken cancellationToken)
 		{
-			while (!stoppingToken.IsCancellationRequested)
+			var dueTime = Common.Helpers.Time.TodayMidnight();
+			var interval = TimeSpan.FromMilliseconds(_sc.AggregateInterval);
+			_logger.LogInformation($"Scheduling Data Aggregation Worker to run in: {dueTime:dd\\ \\d\\a\\y\\s\\,\\ hh\\:mm\\:ss} in interval {interval:dd\\ \\d\\a\\y\\s\\,\\ hh\\:mm\\:ss}");
+			_timer = new Timer(DoWork, null, dueTime, interval);
+			return Task.CompletedTask;
+		}
+		private void DoWork(object state)
+		{
+			_logger.LogInformation($"Data Aggregation Worker running at: {DateTimeOffset.Now}");
+			try
 			{
-				_logger.LogInformation("Data Aggregation Worker running at: {time}", DateTimeOffset.Now);
-				await _da.AggregateAsync();
-				var intervalSeconds = _sc.AggregateInterval;
-#if DEBUG
-				intervalSeconds = 5 * 60 * 1000;
-#endif
-				await Task.Delay(intervalSeconds, stoppingToken);
+				_ = _da.Trim();
+			} catch(Exception e)
+			{
+				_logger.LogError("Could not trim old measurements.", e);
 			}
+		}
+
+		public Task StopAsync(CancellationToken cancellationToken)
+		{
+			_timer?.Change(Timeout.Infinite, 0);
+
+			return Task.CompletedTask;
+		}
+
+		public void Dispose()
+		{
+			_timer?.Dispose();
 		}
 	}
 }

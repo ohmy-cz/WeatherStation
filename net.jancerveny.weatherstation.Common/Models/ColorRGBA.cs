@@ -7,9 +7,9 @@ namespace net.jancerveny.weatherstation.Common.Models
     public class ColorRGBA
     {
         public byte R { get;  set; }
-        public byte G { get; private set; }
-        public byte B { get; private set; }
-        public float A { get; private set; }
+        public byte G { get; set; }
+        public byte B { get; set; }
+        public float A { get; set; }
         public ColorRGBA() 
         {
         }

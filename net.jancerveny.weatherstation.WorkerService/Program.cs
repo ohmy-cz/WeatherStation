@@ -6,6 +6,8 @@ using net.jancerveny.weatherstation.Common.Helpers;
 using net.jancerveny.weatherstation.Common.Models;
 using net.jancerveny.weatherstation.DataLayer;
 using net.jancerveny.weatherstation.WorkerService.Models;
+using System.IO;
+using System.Reflection;
 
 namespace net.jancerveny.weatherstation.WorkerService
 {
@@ -22,6 +24,7 @@ namespace net.jancerveny.weatherstation.WorkerService
 				.ConfigureAppConfiguration((context, builder) =>
 				{
 					builder
+						.SetBasePath(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)) // Required for Linux service
 						.AddJsonFile("appsettings.json")
 						.AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json")
 						.AddEnvironmentVariables()

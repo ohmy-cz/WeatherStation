@@ -25,6 +25,8 @@ namespace net.jancerveny.weatherstation.DataLayer
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            var jsonOptions = new JsonSerializerOptions { IgnoreNullValues = true };
+
             modelBuilder.Entity<Models.DataSource>(entity =>
             {
                 entity.ToTable("data_sources", "Weather");
@@ -40,8 +42,8 @@ namespace net.jancerveny.weatherstation.DataLayer
 
                 entity.Property(e => e.Color)
                     .HasConversion(
-                        v => JsonSerializer.Serialize(v, new JsonSerializerOptions { IgnoreNullValues = true }),
-                        v => JsonSerializer.Deserialize<ColorRGBA>(v, new JsonSerializerOptions { IgnoreNullValues = true })
+                        v => JsonSerializer.Serialize(v, jsonOptions),
+                        v => JsonSerializer.Deserialize<ColorRGBA>(v, jsonOptions)
                     );
             });
 
