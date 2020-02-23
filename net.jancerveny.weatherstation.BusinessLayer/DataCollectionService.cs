@@ -41,9 +41,18 @@ namespace net.jancerveny.weatherstation.BusinessLayer
 				{
 					var temperatures = new List<Measurement>();
                     var hueTemps = await FetchPhilipsHueSensorsAsync();
+
+                    // Only update newer readings
 					if (hueTemps != null)
 					{
-                        temperatures.AddRange(hueTemps);
+                        foreach(var hueTemp in hueTemps)
+                        {
+                            var lastMeasurement = db.Measurements.Where(y => hueTemp.SourceId == y.SourceId).OrderByDescending(y => y.Timestamp).Take(1).FirstOrDefault();
+                            if(lastMeasurement == null || hueTemp.Timestamp > lastMeasurement.Timestamp)
+                            {
+                                temperatures.Add(hueTemp);
+                            }
+                        }
 					}
 					var piTemps = FetchRaspberryPi(); // Seems not working in Async mode
 					if (piTemps != null)
@@ -173,7 +182,7 @@ namespace net.jancerveny.weatherstation.BusinessLayer
 			return sensors.Where(x => x.State.Temperature != null).Select(x => new Measurement { 
 				SourceId = int.Parse(x.Id),
 				Temperature = x.State.Temperature.Value,
-				Timestamp = DateTime.Now
+				Timestamp = x.State.Lastupdated ?? DateTime.Now
 			}).ToList();
 		}
 
