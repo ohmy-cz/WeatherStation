@@ -13,7 +13,7 @@ This is made possible by using a cheap Raspberry PI 4, connected to your home ne
 ## Installation
 This project has been designed to run on **Raspberry PI 4 with 4GB RAM**, running Raspbiann headless.
 
-1. [Install .NET Core 3.1](https://edi.wang/post/2019/9/29/setup-net-core-30-runtime-and-sdk-on-raspberry-pi-4s) runtime on your Raspberry.
+1. [Install .NET Core 3.1](https://edi.wang/post/2019/9/29/setup-net-core-30-runtime-and-sdk-on-raspberry-pi-4) runtime on your Raspberry.
 2. Download this source code with GIT in Visual Studio, and publish both `net.jancerveny.weatherstation.Web` and `net.jancerveny.weatherstation.WorkerService` as Deployment Mode: *Framework-Dependend*, and Target Runtime: *Portable*
 3. Connect to your Raspberry PI using SSH
 4. Create two new services: one to host the website, and another to collect the data periodically:
