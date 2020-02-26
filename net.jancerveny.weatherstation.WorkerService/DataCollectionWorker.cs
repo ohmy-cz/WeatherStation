@@ -30,8 +30,14 @@ namespace net.jancerveny.weatherstation.WorkerService
 			while (!stoppingToken.IsCancellationRequested)
 			{
 				_logger.LogInformation("Data Collection Worker running at: {time}", DateTimeOffset.Now);
-				await _dc.ScanAndUpdate();
-				await _dc.FetchSensorsAsync();
+				try
+				{
+					await _dc.ScanAndUpdate();
+					await _dc.FetchSensorsAsync();
+				} catch(Exception e)
+				{
+					_logger.LogError("Something failed while collecting data.", e);
+				}
 				await Task.Delay(_sc.FetchInterval, stoppingToken);
 			}
 		}
