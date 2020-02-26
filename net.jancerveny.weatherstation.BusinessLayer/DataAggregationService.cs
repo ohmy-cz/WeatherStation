@@ -20,31 +20,58 @@ namespace net.jancerveny.weatherstation.BusinessLayer
 			_dbOptions = dbOptions;
 		}
 
-		public async Task<bool> AggregateAsync()
+		/// <summary>
+		/// Take measurements for last D days for each data source, average them for 24h period, store them in an aggregation table and delete them from the intermmediate measurements table.
+		/// </summary>
+		/// <param name="days">Number of complete days to aggregate</param>
+		/// <param name="offsetDays">Number of -D days to start aggregating from</param>
+		/// <returns>True on success</returns>
+		public async Task<bool> AggregateAsync(int days, int offsetDays)
 		{
-			_logger.LogInformation("Agregate");
+			_logger.LogInformation("Agregating old measurements");
 			using (var db = new WeatherDbContext(_dbOptions))
 			{
-				var measurements = db.Measurements.Where(x => x.Timestamp <= DateTime.Now.AddDays(-7));
-				if(measurements.Count() == 0)
+				for (var day = 1; day <= days; day++)
 				{
-					return true;
-				}
-				//or Lambda https://stackoverflow.com/questions/15696817/translate-sql-to-lambda-linq-with-groupby-and-average
-				var aggregate = measurements.GroupBy(x => new { x.SourceId }).Select(g => new AggregatedMeasurement { SourceId = g.Key.SourceId, Temperature = (int)Math.Round(g.Average(p => p.Temperature))  }).ToList();
-				db.AggregatedMeasurements.AddRange(aggregate);
-				db.Measurements.RemoveRange(measurements);
-				return await db.SaveChangesAsync() > 0;
-			}
-		}
+					var startDay = DateTime.Today.AddDays((day + offsetDays) * -1);
+					var endDay = startDay.AddDays(1);
+					
+					// If an aggregation exists already (maybe this method ran before, or there was an overlap in timing),
+					// skip aggregation
+					if(db.AggregatedMeasurements.Where(x => x.Day.Date == startDay.Date).Any())
+					{
+						continue;
+					}
 
-		public async Task<bool> Trim()
-		{
-			_logger.LogInformation("Trimming old measurements");
-			using (var db = new WeatherDbContext(_dbOptions))
-			{
-				var measurements = db.Measurements.Where(x => x.Timestamp <= DateTime.Now.AddDays(-3));
-				db.Measurements.RemoveRange(measurements);
+					var dailyMeasurements = db.Measurements.Where(x =>
+						x.Timestamp >= startDay &&
+						x.Timestamp < endDay
+					);
+
+					var dataSources = dailyMeasurements
+						.Select(x => x.SourceId)
+						.Distinct()
+						.ToList();
+
+					foreach (var dataSourceId in dataSources)
+					{
+						var averageDailyTemperature = (int)Math.Round(dailyMeasurements.Where(x => 
+							x.SourceId == dataSourceId
+						).Average(x => 
+							x.Temperature
+						));
+
+						db.AggregatedMeasurements.Add(new AggregatedMeasurement { 
+							SourceId = dataSourceId,
+							Temperature = averageDailyTemperature,
+							Day = startDay
+						});
+					}
+					
+					// Remove the measurements from the live measurements table
+					db.Measurements.RemoveRange(dailyMeasurements);
+				}
+
 				return await db.SaveChangesAsync() > 0;
 			}
 		}

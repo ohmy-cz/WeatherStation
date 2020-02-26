@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using net.jancerveny.weatherstation.DataLayer;
@@ -9,9 +10,10 @@ using net.jancerveny.weatherstation.DataLayer;
 namespace net.jancerveny.weatherstation.DataLayer.Migrations
 {
     [DbContext(typeof(WeatherDbContext))]
-    partial class WeatherDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200225224753_ChangeAggregationTable1")]
+    partial class ChangeAggregationTable1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -21,6 +21,7 @@ namespace net.jancerveny.weatherstation.DataLayer
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=jacehome;Username=pi;Password=d3v3l0p3r");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -65,7 +66,7 @@ namespace net.jancerveny.weatherstation.DataLayer
                 entity.Property(e => e.Id)
                     .ValueGeneratedOnAdd();
 
-                entity.Property(e => e.Timestamp)
+                entity.Property(e => e.Day)
                     .HasColumnType("timestamp with time zone");
             });
 

@@ -2,6 +2,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using net.jancerveny.weatherstation.BusinessLayer;
 using net.jancerveny.weatherstation.WorkerService.Models;
+using Npgsql;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,10 +11,12 @@ namespace net.jancerveny.weatherstation.WorkerService
 {
 	public class DataAggregationWorker : IHostedService, IDisposable
 	{
+		private bool disposed;
 		private readonly ILogger<DataAggregationWorker> _logger;
 		private readonly DataAggregationService _da;
 		private readonly ServiceConfiguration _sc;
 		private Timer _timer;
+		private readonly TimeSpan _aggregationInterval;
 
 		public DataAggregationWorker(ILogger<DataAggregationWorker> logger, DataAggregationService da, ServiceConfiguration sc)
 		{
@@ -23,14 +26,17 @@ namespace net.jancerveny.weatherstation.WorkerService
 			_logger = logger;
 			_da = da;
 			_sc = sc;
+			_aggregationInterval = TimeSpan.FromMilliseconds(_sc.AggregateInterval);
 		}
 
 		public Task StartAsync(CancellationToken cancellationToken)
 		{
 			var dueTime = Common.Helpers.Time.TodayMidnight();
-			var interval = TimeSpan.FromMilliseconds(_sc.AggregateInterval);
-			_logger.LogInformation($"Scheduling Data Aggregation Worker to run in: {dueTime:dd\\ \\d\\a\\y\\s\\,\\ hh\\:mm\\:ss} in interval {interval:dd\\ \\d\\a\\y\\s\\,\\ hh\\:mm\\:ss}");
-			_timer = new Timer(DoWork, null, dueTime, interval);
+#if DEBUG
+			dueTime = TimeSpan.Zero;
+#endif
+			_logger.LogInformation($"Scheduling Data Aggregation Worker to run in: {dueTime:dd\\ \\d\\a\\y\\s\\,\\ hh\\:mm\\:ss} in interval {_aggregationInterval:dd\\ \\d\\a\\y\\s\\,\\ hh\\:mm\\:ss}");
+			_timer = new Timer(DoWork, null, dueTime, _aggregationInterval);
 			return Task.CompletedTask;
 		}
 		private void DoWork(object state)
@@ -38,8 +44,13 @@ namespace net.jancerveny.weatherstation.WorkerService
 			_logger.LogInformation($"Data Aggregation Worker running at: {DateTimeOffset.Now}");
 			try
 			{
-				_ = _da.Trim();
-			} catch(Exception e)
+				_ = _da.AggregateAsync(_aggregationInterval.Days, 3);
+			}
+			catch (NpgsqlException e)
+			{
+				_logger.LogError("Aggregation failed due to SQL issue.", e);
+			}
+			catch (Exception e)
 			{
 				_logger.LogError("Could not trim old measurements.", e);
 			}
@@ -54,7 +65,27 @@ namespace net.jancerveny.weatherstation.WorkerService
 
 		public void Dispose()
 		{
-			_timer?.Dispose();
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		// Protected implementation of Dispose pattern.
+		protected virtual void Dispose(bool disposing)
+		{
+			if (disposed)
+				return;
+
+			if (disposing)
+			{
+				_timer?.Dispose();
+			}
+
+			disposed = true;
+		}
+
+		~DataAggregationWorker()
+		{
+			Dispose(false);
 		}
 	}
 }

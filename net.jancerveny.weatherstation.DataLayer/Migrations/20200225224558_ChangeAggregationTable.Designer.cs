@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using net.jancerveny.weatherstation.DataLayer;
@@ -9,9 +10,10 @@ using net.jancerveny.weatherstation.DataLayer;
 namespace net.jancerveny.weatherstation.DataLayer.Migrations
 {
     [DbContext(typeof(WeatherDbContext))]
-    partial class WeatherDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200225224558_ChangeAggregationTable")]
+    partial class ChangeAggregationTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,6 +27,9 @@ namespace net.jancerveny.weatherstation.DataLayer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<int>("AggregationLength")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("Day")
                         .HasColumnType("timestamp with time zone");

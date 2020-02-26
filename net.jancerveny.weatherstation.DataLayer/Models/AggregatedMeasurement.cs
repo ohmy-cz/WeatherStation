@@ -8,13 +8,16 @@ namespace net.jancerveny.weatherstation.DataLayer.Models
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
-        public DateTime Timestamp { get; set; }
+        /// <summary>
+        /// Day of a year
+        /// </summary>
+        [Column(TypeName="Date")]
+        public DateTime Day { get; set; }
         public int SourceId { get; set; }
         public virtual DataSource Source { get; set; }
-        public int Temperature { get; set; }
         /// <summary>
-        /// Aggregation span = Timestamp + AggregationLength
+        /// Average temperature for the day
         /// </summary>
-        public AggregationLengthEnum AggregationLength { get; set; }
+        public int Temperature { get; set; }
     }
 }
