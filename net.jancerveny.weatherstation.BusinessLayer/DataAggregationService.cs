@@ -24,16 +24,31 @@ namespace net.jancerveny.weatherstation.BusinessLayer
 		/// Take measurements for last D days for each data source, average them for 24h period, store them in an aggregation table and delete them from the intermmediate measurements table.
 		/// </summary>
 		/// <param name="days">Number of complete days to aggregate</param>
-		/// <param name="offsetDays">Number of -D days to start aggregating from</param>
+		/// <param name="maxAgeDays">Number of -D days to start aggregating from</param>
 		/// <returns>True on success</returns>
-		public async Task<bool> AggregateAsync(int days, int offsetDays)
+		public async Task<bool> AggregateAsync(int maxAgeDays)
 		{
-			_logger.LogInformation("Agregating old measurements");
+			_logger.LogInformation($"Agregating old measurements with {maxAgeDays} days offset");
 			using (var db = new WeatherDbContext(_dbOptions))
 			{
-				for (var day = 1; day <= days; day++)
+				var oldestDay = db.Measurements.OrderBy(x => x.Timestamp)?.Take(1)?.Select(x => x.Timestamp)?.FirstOrDefault().Date;
+				if(oldestDay == null)
 				{
-					var startDay = DateTime.Today.AddDays((day + offsetDays) * -1);
+					_logger.LogInformation($"Nothing to aggregate.");
+					return true;
+				}
+
+				var newestDay = DateTime.Today.AddDays(maxAgeDays * -1);
+				int daysDelta = ((TimeSpan)(newestDay - oldestDay)).Days;
+				if (daysDelta < 1)
+				{
+					_logger.LogInformation($"Nothing to aggregate, the oldest measured day {oldestDay:d} is after offset {newestDay:d}");
+					return true;
+				}
+
+				for (var dayOffset = 0; dayOffset < daysDelta; dayOffset++)
+				{
+					var startDay = oldestDay.Value.AddDays(dayOffset); 
 					var endDay = startDay.AddDays(1);
 					
 					// If an aggregation exists already (maybe this method ran before, or there was an overlap in timing),
@@ -57,9 +72,9 @@ namespace net.jancerveny.weatherstation.BusinessLayer
 					{
 						var averageDailyTemperature = (int)Math.Round(dailyMeasurements.Where(x => 
 							x.SourceId == dataSourceId
-						).Average(x => 
-							x.Temperature
-						));
+						).Select(x => 
+							(double)x.Temperature
+						).Median());
 
 						db.AggregatedMeasurements.Add(new AggregatedMeasurement { 
 							SourceId = dataSourceId,

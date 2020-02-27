@@ -44,7 +44,7 @@ namespace net.jancerveny.weatherstation.WorkerService
 			_logger.LogInformation($"Data Aggregation Worker running at: {DateTimeOffset.Now}");
 			try
 			{
-				_ = _da.AggregateAsync(_aggregationInterval.Days, 3);
+				_ = _da.AggregateAsync(1);
 			}
 			catch (NpgsqlException e)
 			{
