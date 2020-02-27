@@ -11,6 +11,11 @@ public static class IntExtensions
             throw new InvalidOperationException("Cannot compute median for an empty set.");
         }
 
+        if(source.Count() == 1)
+        {
+            return source.First();
+        }
+
         var sortedList = from number in source
                          orderby number
                          select number;

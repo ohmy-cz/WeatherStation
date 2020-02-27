@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using net.jancerveny.weatherstation.BusinessLayer;
+using net.jancerveny.weatherstation.Common.Interfaces;
 using net.jancerveny.weatherstation.Common.Models;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace net.jancerveny.weatherstation.Client.Web.Controllers
@@ -19,9 +21,9 @@ namespace net.jancerveny.weatherstation.Client.Web.Controllers
             _ds = ds;
         }
 
-        public async Task<IActionResult> GetReadings(DateTime? since = null)
+        public async Task<IActionResult> GetReadingsAsync(DateTime? since = null)
         {
-            var result = await _dr.GetReadingsAsync(RealtimeChartConfiguration.Labels.Length, since);
+            var result = await  _dr.GetReadingsAsync(since);
             return Ok(result);
         }
 
@@ -31,9 +33,18 @@ namespace net.jancerveny.weatherstation.Client.Web.Controllers
             return Ok(result);
         }
 
-        public IActionResult GetChartConfig()
+        public async Task<IActionResult> GetAggregations()
         {
-            return Ok(RealtimeChartConfiguration.Labels);
+            var result = await _dr.GetAggregationsAsync(ChartConfiguration.Last7Days.Labels[0].Start);
+            return Ok(result);
+        }
+
+        public IActionResult GetChartsConfig()
+        {
+            return Ok(new List<IChartConfiguration> { 
+                ChartConfiguration.RealTime,
+                ChartConfiguration.Last7Days
+            });
         }
     }
 }

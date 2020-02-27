@@ -1,0 +1,33 @@
+{
+  "name": "net.jancerveny.weatherstation.client.web",
+  "version": "1.0.0",
+  "description": "UI",
+  "main": "/",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ohmy-cz/WeatherStation.git"
+  },
+  "keywords": [
+    "weather",
+    "station",
+    "philips",
+    "hue"
+  ],
+  "author": "Jan Cerveny",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ohmy-cz/WeatherStation/issues"
+  },
+  "homepage": "https://github.com/ohmy-cz/WeatherStation#readme",
+  "dependencies": {
+    "@types/chart.js": "^2.9.14",
+    "@types/jquery": "^3.3.33",
+    "amd": "0.0.0"
+  },
+  "devDependencies": {
+    "moment": "^2.24.0"
+  }
+}

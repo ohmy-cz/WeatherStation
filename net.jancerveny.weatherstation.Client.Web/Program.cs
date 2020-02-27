@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using System.IO;
+using System.Reflection;
 
 namespace net.jancerveny.weatherstation
 {
@@ -18,8 +15,18 @@ namespace net.jancerveny.weatherstation
 
 		public static IHostBuilder CreateHostBuilder(string[] args) =>
 			Host.CreateDefaultBuilder(args)
+				.ConfigureAppConfiguration((context, builder) =>
+				{
+					builder
+						.SetBasePath(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)) // Required for Linux service
+						.AddJsonFile("appsettings.json")
+						.AddJsonFile($"appsettings.{context.HostingEnvironment.EnvironmentName}.json")
+						.AddEnvironmentVariables()
+						.Build();
+				})
 				.ConfigureWebHostDefaults(webBuilder =>
 				{
+					webBuilder.UseUrls("http://localhost:5050");
 					webBuilder.UseStartup<Startup>();
 				});
 	}
