@@ -46,11 +46,11 @@ interface IReadOut {
 
 interface IReadingsResponse {
 	timestamp: Date,
-	readings: IReadOut[]
+	readouts: IReadOut[]
 }
 
 jQuery(function ($) {
-	var readingsSince = null;
+	var readoutsSince = null;
 	var dataSources1:IDataSource[] = [];
 
 	var getChartsConfig = function (cb) {
@@ -70,10 +70,10 @@ jQuery(function ($) {
 	};
 
 	var getDataReadouts = function (cb) {
-		$.get('/data/GetReadings', { since: readingsSince }, function (r: IReadingsResponse) {
-			readingsSince = r.timestamp; //  Makes sure we only get the delta
+		$.get('/data/GetReadouts', { since: readoutsSince }, function (r: IReadingsResponse) {
+			readoutsSince = r.timestamp; //  Makes sure we only get the delta
 			if (cb) {
-				cb(r.readings);
+				cb(r.readouts);
 			}
 		});
 	};
@@ -179,7 +179,8 @@ jQuery(function ($) {
 								}
 								let datasetId = dsf[0].id;
 								let df = delta.filter(x => x.sourceId == datasetId);
-								let lastKnownValue: number | null = typeof dataset.data[dataset.data.length - 1] === "number" ? dataset.data[dataset.data.length - 1] as number : null;
+								//let lastKnownValue: number | null = typeof dataset.data[dataset.data.length - 1] === "number" ? dataset.data[dataset.data.length - 1] as number : null; // Handled on the server.
+								let lastKnownValue = null;
 								let temp: number | null = df.length > 0 ? (df[0].temperature / 100) : lastKnownValue;
 
 								console.log(`Adding column to: ${dataset.label} temp: ${temp}`);

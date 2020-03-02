@@ -10,10 +10,10 @@ namespace net.jancerveny.weatherstation.Client.Web.Controllers
 {
     public class DataController : Controller
     {
-        private readonly DataReadingsService _dr;
+        private readonly DataReadoutService _dr;
         private readonly DataSourcesService _ds;
 
-        public DataController(DataReadingsService dr, DataSourcesService ds)
+        public DataController(DataReadoutService dr, DataSourcesService ds)
         {
             if (dr == null) throw new ArgumentNullException(nameof(dr));
             if (ds == null) throw new ArgumentNullException(nameof(ds));
@@ -21,9 +21,9 @@ namespace net.jancerveny.weatherstation.Client.Web.Controllers
             _ds = ds;
         }
 
-        public async Task<IActionResult> GetReadingsAsync(DateTime? since = null)
+        public async Task<IActionResult> GetReadoutsAsync(DateTime? since = null)
         {
-            var result = await  _dr.GetReadingsAsync(since);
+            var result = await  _dr.GetReadoutsAsync(since);
             return Ok(result);
         }
 

@@ -18,10 +18,11 @@
     "net.jancerveny.weatherstation": {
       "commandName": "Project",
       "launchBrowser": true,
+      "launchUrl": "http://localhost:5050",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:5001"
+      "applicationUrl": "http://localhost:5050"
     }
   }
 }

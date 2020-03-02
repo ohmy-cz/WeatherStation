@@ -7,7 +7,7 @@ var ChartTypeEnum;
     ChartTypeEnum[ChartTypeEnum["Annual"] = 4] = "Annual";
 })(ChartTypeEnum || (ChartTypeEnum = {}));
 jQuery(function ($) {
-    var readingsSince = null;
+    var readoutsSince = null;
     var dataSources1 = [];
     var getChartsConfig = function (cb) {
         $.get('/data/GetChartsConfig', function (r) {
@@ -24,10 +24,10 @@ jQuery(function ($) {
         });
     };
     var getDataReadouts = function (cb) {
-        $.get('/data/GetReadings', { since: readingsSince }, function (r) {
-            readingsSince = r.timestamp;
+        $.get('/data/GetReadouts', { since: readoutsSince }, function (r) {
+            readoutsSince = r.timestamp;
             if (cb) {
-                cb(r.readings);
+                cb(r.readouts);
             }
         });
     };
@@ -116,7 +116,7 @@ jQuery(function ($) {
                                 }
                                 var datasetId = dsf[0].id;
                                 var df = delta.filter(function (x) { return x.sourceId == datasetId; });
-                                var lastKnownValue = typeof dataset.data[dataset.data.length - 1] === "number" ? dataset.data[dataset.data.length - 1] : null;
+                                var lastKnownValue = null;
                                 var temp = df.length > 0 ? (df[0].temperature / 100) : lastKnownValue;
                                 console.log("Adding column to: " + dataset.label + " temp: " + temp);
                                 dataset.data.push(temp);

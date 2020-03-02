@@ -11,16 +11,16 @@ using System.Threading.Tasks;
 
 namespace net.jancerveny.weatherstation.BusinessLayer
 {
-	public class DataReadingsService
+	public class DataReadoutService
 	{
 		private readonly DbContextOptions<WeatherDbContext> _dbOptions;
-		public DataReadingsService(DbContextOptions<WeatherDbContext> dbOptions)
+		public DataReadoutService(DbContextOptions<WeatherDbContext> dbOptions)
 		{
 			if (dbOptions == null) throw new ArgumentNullException(nameof(dbOptions));
 			_dbOptions = dbOptions;
 		}
 
-		public async Task<ReadingsResponse> GetReadingsAsync(DateTime? customSince = null)
+		public async Task<ReadoutResponse> GetReadoutsAsync(DateTime? customSince = null)
 		{
 			var since = ChartConfiguration.RealTime.Labels.First().Start;
 			if (customSince != null)
@@ -39,11 +39,16 @@ namespace net.jancerveny.weatherstation.BusinessLayer
 					labels = labels.Where(x => customSince.Value > x.Start).TakeLast(1).ToList();
 				}
 
-				// TODO remove
+				// Have some fallback values, so we can draw continuous chart lines
 				var lastNonNullTemperatures = new Dictionary<int, int?>();
 				foreach (var source in sources)
 				{
-					lastNonNullTemperatures.Add(source.Id, null);
+					var lastMeasuredTemperature = await db.Measurements
+						.Where(x => x.SourceId == source.Id)
+						.OrderByDescending(x=>x.Timestamp)
+						.Take(1)
+						.FirstOrDefaultAsync();
+					lastNonNullTemperatures.Add(source.Id, lastMeasuredTemperature?.Temperature);
 				}
 
 				foreach (var chartLabel in labels)
@@ -70,27 +75,24 @@ namespace net.jancerveny.weatherstation.BusinessLayer
 
 					foreach(var medianTemperature in medianTemperatures)
 					{
+						bool stale = true;
 						if (medianTemperature.Value != null && medianTemperature.Value.Count() > 0)
 						{
 							lastNonNullTemperatures[medianTemperature.Key] = (int?)Math.Round(medianTemperature.Value.Median() * 100) / 100;
+							stale = false;
 						}
-					}
 
-					foreach (var source in sources)
-					{
 						readouts.Add(new ReadOut
 						{
-							SourceId = source.Id,
-							Temperature = lastNonNullTemperatures[source.Id]
+							SourceId = medianTemperature.Key,
+							Temperature = lastNonNullTemperatures[medianTemperature.Key],
+							Stale = stale
 						});
 					}
 				}
 
-				// Hack, the last set of readings always seems to come up empty
-				//var readouts1 = readouts.Take(readouts.Count() - sources.Count()).ToList();
-
-				return new ReadingsResponse { 
-					Readings = readouts,
+				return new ReadoutResponse { 
+					Readouts = readouts,
 					Timestamp = DateTime.Now
 				};
 			}

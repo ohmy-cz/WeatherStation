@@ -25,7 +25,7 @@ namespace net.jancerveny.weatherstation
 			//	options.UseNpgsql(Configuration.GetConnectionString("Db")));
 			services.AddSingleton(Database.GetDbContextOptions<WeatherDbContext>(Configuration.GetConnectionString("Db")));
 			services.AddSingleton<DataSourcesService>();
-			services.AddSingleton<DataReadingsService>();
+			services.AddSingleton<DataReadoutService>();
 			var mvc = services.AddControllersWithViews();
 #if DEBUG
 				mvc.AddRazorRuntimeCompilation();
