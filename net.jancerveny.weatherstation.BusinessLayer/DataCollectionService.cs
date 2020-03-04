@@ -49,7 +49,7 @@ namespace net.jancerveny.weatherstation.BusinessLayer
 				try
 				{
 					var temperatures = new List<Measurement>();
-                    temperatures.Add(await FetchWeatherForecastAsync());
+                    temperatures.AddRange(await FetchWeatherForecastAsync());
                     var hueTemps = await FetchPhilipsHueSensorsAsync();
 
                     // Only update newer readings
@@ -175,10 +175,25 @@ namespace net.jancerveny.weatherstation.BusinessLayer
                     {
                         Id = (int)ReservedSourceIdEnum.ThirdPartyWeather,
                         Created = DateTime.Now,
-                        Name = "Forcast",
+                        Name = "Online",
                         LastRead = DateTime.Now,
                         Color = Colors.ThirdPartyWeather,
-                        SourceType = SourceTypeEnum.WeatherForcast
+                        SourceType = SourceTypeEnum.ThirdPartyWeather
+                    });
+                }
+
+                // Add 3rdparty Weather forecast - feels like temperature
+                if (!knownSensorIds.Contains((int)ReservedSourceIdEnum.ThirdPartyWeatherFeelsLike))
+                {
+                    _logger.LogInformation("Adding new Third party temperature source");
+                    db.DataSources.Add(new DataSource
+                    {
+                        Id = (int)ReservedSourceIdEnum.ThirdPartyWeatherFeelsLike,
+                        Created = DateTime.Now,
+                        Name = "Online - feels like",
+                        LastRead = DateTime.Now,
+                        Color = Colors.ThirdPartyWeatherFeelsLike,
+                        SourceType = SourceTypeEnum.ThirdPartyWeather
                     });
                 }
 
@@ -233,7 +248,7 @@ namespace net.jancerveny.weatherstation.BusinessLayer
 			return null;
 		}
 
-        private async Task<Measurement> FetchWeatherForecastAsync()
+        private async Task<IReadOnlyCollection<Measurement>> FetchWeatherForecastAsync()
         {
             _logger.LogInformation("Fetching information from Weather forecast provider");
             var request = new HttpRequestMessage(HttpMethod.Get, $"{_weatherConfig.Endpoint}?lat={_weatherConfig.Latitude}&lon={_weatherConfig.Longitude}&APPID={_weatherConfig.ApiKey}&units=metric");
@@ -242,12 +257,22 @@ namespace net.jancerveny.weatherstation.BusinessLayer
                 var client = _clientFactory.CreateClient();
                 var response = await client.SendAsync(request);
                 var openWeatherResponse = JsonSerializer.Deserialize<OpenWeatherResponse>(await response.Content.ReadAsStringAsync());
+                var now = DateTime.Now;
 
-                return new Measurement
+                return new List<Measurement>
                 {
-                    SourceId = (int)ReservedSourceIdEnum.ThirdPartyWeather,
-                    Temperature = (int)(openWeatherResponse.Main.Temp * 100),
-                    Timestamp = DateTime.Now
+                    new Measurement
+                    {
+                        SourceId = (int)ReservedSourceIdEnum.ThirdPartyWeather,
+                        Temperature = (int)(openWeatherResponse.Main.Temp * 100),
+                        Timestamp = now
+                    },
+                    new Measurement
+                    {
+                        SourceId = (int)ReservedSourceIdEnum.ThirdPartyWeatherFeelsLike,
+                        Temperature = (int)(openWeatherResponse.Main.FeelsLike * 100),
+                        Timestamp = now
+                    }
                 };
             } catch (Exception ex)
             {
