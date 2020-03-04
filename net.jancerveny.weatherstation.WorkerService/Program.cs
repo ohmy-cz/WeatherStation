@@ -38,6 +38,10 @@ namespace net.jancerveny.weatherstation.WorkerService
 					var serviceConfig = new ServiceConfiguration();
 					hostContext.Configuration.GetSection("Service").Bind(serviceConfig);
 					services.AddSingleton(serviceConfig);
+					var weatherProviderConfig = new WeatherProviderConfiguration();
+					hostContext.Configuration.GetSection("WeatherProvider").Bind(weatherProviderConfig);
+					services.AddSingleton(weatherProviderConfig);
+					services.AddHttpClient();
 					services.AddSingleton(Database.GetDbContextOptions<WeatherDbContext>(hostContext.Configuration.GetConnectionString("Db")));
 					services.AddSingleton<DataCollectionService>();
 					services.AddSingleton<DataAggregationService>();

@@ -9,37 +9,47 @@ using Q42.HueApi.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace net.jancerveny.weatherstation.BusinessLayer
 {
-	/// <summary>
-	/// Class that gathers methods to fetch new data from different sources
-	/// </summary>
-	public class DataCollectionService
-	{
-		private readonly PhilipsHueConfiguration _config;
-		private readonly ILogger<DataCollectionService> _logger;
+    /// <summary>
+    /// Class that gathers methods to fetch new data from different sources
+    /// </summary>
+    public class DataCollectionService
+    {
+        private readonly IHttpClientFactory _clientFactory;
+        private readonly PhilipsHueConfiguration _config;
+        private readonly WeatherProviderConfiguration _weatherConfig;
+        private readonly ILogger<DataCollectionService> _logger;
 		private readonly ILocalHueClient _hueClient;
 		private readonly DbContextOptions<WeatherDbContext> _dbOptions;
-		public DataCollectionService(ILogger<DataCollectionService> logger, PhilipsHueConfiguration config, DbContextOptions<WeatherDbContext> dbOptions)
+		public DataCollectionService(ILogger<DataCollectionService> logger, PhilipsHueConfiguration config, DbContextOptions<WeatherDbContext> dbOptions, IHttpClientFactory clientFactory, WeatherProviderConfiguration weatherConfiguration)
 		{
 			if (logger == null) throw new ArgumentNullException(nameof(logger));
 			if (config == null) throw new ArgumentNullException(nameof(config));
 			if (dbOptions == null) throw new ArgumentNullException(nameof(dbOptions));
-			_logger = logger;
+            if (clientFactory == null) throw new ArgumentNullException(nameof(clientFactory));
+            if (weatherConfiguration == null) throw new ArgumentNullException(nameof(weatherConfiguration));
+            _logger = logger;
 			_config = config;
 			_dbOptions = dbOptions;
 			_hueClient = new LocalHueClient(_config.BridgeIp);
 			_hueClient.Initialize(_config.AppKey);
-		}
-		public async Task<bool> FetchSensorsAsync()
+            _clientFactory = clientFactory;
+            _weatherConfig = weatherConfiguration;
+        }
+
+		public async Task<bool> FetchTemperaturesAsync()
 		{
 			using (var db = new WeatherDbContext(_dbOptions))
 			{
 				try
 				{
 					var temperatures = new List<Measurement>();
+                    temperatures.Add(await FetchWeatherForecastAsync());
                     var hueTemps = await FetchPhilipsHueSensorsAsync();
 
                     // Only update newer readings
@@ -54,12 +64,13 @@ namespace net.jancerveny.weatherstation.BusinessLayer
                             }
                         }
 					}
+
 					var piTemps = FetchRaspberryPi(); // Seems not working in Async mode
 					if (piTemps != null)
 					{
 						temperatures.AddRange(piTemps);
 					}
-                    //temperatures.Add(await FetchWeatherForecastAsync());
+
 					_logger.LogInformation($"Amount of temperatures: {temperatures.Count()}");
 					if (temperatures.Count > 0)
 					{
@@ -201,12 +212,12 @@ namespace net.jancerveny.weatherstation.BusinessLayer
                     var now = DateTime.Now;
                     return new List<Measurement> {
                         new Measurement {
-                            SourceId = -2, // = CPU
+                            SourceId = (int)ReservedSourceIdEnum.RaspberryPICPU,
 						    Temperature = cpuTemp / 10,
                             Timestamp = now
                         },
                         new Measurement {
-                            SourceId = -3, // = GPU
+                            SourceId = (int)ReservedSourceIdEnum.RaspberryPIGPU,
 						    Temperature = gpuTemp,
                             Timestamp = now
                         }
@@ -222,10 +233,27 @@ namespace net.jancerveny.weatherstation.BusinessLayer
 			return null;
 		}
 
-		//private async Task<Temperatures> FetchWeatherForecastAsync()
-		//{
-		// _logger.LogInformation("Fetching information from Weather forecast provider");
-		//	return new NotImplementedException();
-		//}
-	}
+        private async Task<Measurement> FetchWeatherForecastAsync()
+        {
+            _logger.LogInformation("Fetching information from Weather forecast provider");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{_weatherConfig.Endpoint}?lat={_weatherConfig.Latitude}&lon={_weatherConfig.Longitude}&APPID={_weatherConfig.ApiKey}&units=metric");
+            try
+            {
+                var client = _clientFactory.CreateClient();
+                var response = await client.SendAsync(request);
+                var openWeatherResponse = JsonSerializer.Deserialize<OpenWeatherResponse>(await response.Content.ReadAsStringAsync());
+
+                return new Measurement
+                {
+                    SourceId = (int)ReservedSourceIdEnum.ThirdPartyWeather,
+                    Temperature = (int)(openWeatherResponse.Main.Temp * 100),
+                    Timestamp = DateTime.Now
+                };
+            } catch (Exception ex)
+            {
+                _logger.LogError("An error occured while trying to fetch external weather information", ex);
+            }
+            return null;
+        }
+    }
 }
