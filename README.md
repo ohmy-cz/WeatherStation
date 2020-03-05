@@ -3,7 +3,7 @@
 Home weather station using Philips HUE [indoor](https://www2.meethue.com/en-us/p/hue-motion-sensor/046677473389) and [outdoor](https://www2.meethue.com/en-us/p/hue-outdoor-sensor/046677541736) sensors
 
 ## The project
-Not a lot of Philips HUE owners know that the motion sensors can do more than simply detect motion and be a tiny part in the smart home chain. These sensors also measure *temperature*, humidity, and ambient light.
+Not many Philips HUE owners know, that the motion sensors can do *more* than simply detect motion and trigger some action. These sensors also measure *temperature*, humidity, and ambient light which is not advertised.
 
 This project focuses on periodically collecting temperatures from all your sensors, and presenting them with a nice, user-friendly interactive real-time chart, together with aggregated historical data.
 
@@ -13,7 +13,7 @@ This is made possible by using a cheap Raspberry PI 4, connected to your home ne
 [See here](https://weather.jancerveny.net) 
 
 ## Installation
-This project has been designed to run on **Raspberry PI 4 with 4GB RAM**, running Raspbiann headless.
+This project has been designed to run on **Raspberry PI 4 with 4GB RAM**, running Raspbiann headless. Any Raspberry PI 4 should be able to run this undemanding project.
 
 ### Required knowledge
 You need to know some basic knowledge about Visual Studio, networking, and Linux.
@@ -30,8 +30,7 @@ I'm using Windows in this tutorial, but you should be able to connect from any p
 ### Setup
 1. Download this source code with GIT in Visual Studio
 2. Update the appsettings.json in both `net.jancerveny.weatherstation.Web` and `net.jancerveny.weatherstation.WorkerService`, and replace the `<REPLACE>` strings with your own to reflect your local Philips HUE bridge and IP Address. 
-
-TODO: Describe how to generate Philips HUE API key. For now, see [this link]([Install .NET Core 3.1](https://edi.wang/post/2019/9/29/setup-net-core-30-runtime-and-sdk-on-raspberry-pi-4) ) and temporarily overwrite `HomeController.cs`' `Index` method to generate it for you. 
+   TODO: Describe how to generate Philips HUE API key. For now, see [this link]([Install .NET Core 3.1](https://edi.wang/post/2019/9/29/setup-net-core-30-runtime-and-sdk-on-raspberry-pi-4) ) and temporarily overwrite `HomeController.cs`' `Index` method to generate it for you. 
 3. Fill in the `ConnectionStrings` for your Raspberry PI PostgreSQL host in *both projects'* `appsettings.json` - replace the username and password parameters with your own database username and password. Then follow [this tutorial](http://www.postgresonline.com/journal/archives/38-PuTTY-for-SSH-Tunneling-to-PostgreSQL-Server.html) to set up a Putty SSH tunnel to allow your computer during build to connect to your Raspberry PI's new PostgreSQL database. Just follow the pictures. No worries, nothing needs to permanently run on your computer - this is a one-time action only.
 4. Make sure Putty with a SSH tunnel set up is running. Now open *View/Other Windows/Package Manager Console* panel in VisualStudio. Enter this command: `Update-Database -s "net.jancerveny.weatherstation.Client.Web" -p "net.jancerveny.weatherstation.DataLayer" -c WeatherDbContext`. This should update your Raspberry PI database and create all required tables.
 5. Publish *both projects* as Deployment Mode: *Framework-Dependend*, and Target Runtime: *Portable*
@@ -125,3 +124,6 @@ server {
 }
 ```
 6. [Install certbot](https://certbot.eff.org/lets-encrypt/debianbuster-nginx), and run through its very convenient wizard that will set up automatic free SSL renewal to make your site secure.
+
+## License
+This project has been released under LGPL license.
