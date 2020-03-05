@@ -38,7 +38,11 @@ namespace net.jancerveny.weatherstation.BusinessLayer
 					return true;
 				}
 
-				var newestDay = DateTime.Today.AddDays(maxAgeDays * -1);
+				var newestDay = DateTime.Today;
+				if (maxAgeDays > 1)
+				{
+					newestDay.AddDays((maxAgeDays - 1) * -1);
+				}
 				int daysDelta = ((TimeSpan)(newestDay - oldestDay)).Days;
 				if (daysDelta < 1)
 				{
