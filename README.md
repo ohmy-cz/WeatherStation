@@ -129,3 +129,9 @@ server {
 
 ## License
 This project has been released under LGPL license.
+
+## TODOs
+- Add an interface to generate a Philips HUE API key
+- Code cleanup
+- Separate the Raspberry PI temperatures in their separate chart
+- Add hourly, monthly and yearly charts
