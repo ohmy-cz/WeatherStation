@@ -33,7 +33,7 @@ namespace net.jancerveny.weatherstation.WorkerService
 				try
 				{
 					await _dc.ScanAndUpdate();
-					await _dc.FetchSensorsAsync();
+					await _dc.FetchTemperaturesAsync();
 				} catch(Exception e)
 				{
 					_logger.LogError("Something failed while collecting data.", e);
