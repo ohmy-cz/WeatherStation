@@ -9,6 +9,8 @@ This project focuses on periodically collecting temperatures from all your senso
 
 This is made possible by using a cheap Raspberry PI 4, connected to your home network over wifi. This little computer will host a web URL that will allow you to access the application interface from *any* computer or phone on your home network, or from *anywhere* in the world (**if** you choose to do so by opening your Raspberry PI's IP address to the world in your wifi router).
 
+## Online demo
+[See here](https://weather.jancerveny.net) 
 
 ## Installation
 This project has been designed to run on **Raspberry PI 4 with 4GB RAM**, running Raspbiann headless.
