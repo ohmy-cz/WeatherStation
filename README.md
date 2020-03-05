@@ -23,14 +23,16 @@ I'm using Windows in this tutorial, but you should be able to connect from any p
 
 ### Install dependencies first
 1. Get [Putty](https://www.putty.org/) for connecting to your Raspberry PI
-2. [Install .NET Core 3.1](https://edi.wang/post/2019/9/29/setup-net-core-30-runtime-and-sdk-on-raspberry-pi-4) runtime on your Raspberry.
+2. <a name="netcoreruntimeinstall"></a>[Install .NET Core 3.1](https://edi.wang/post/2019/9/29/setup-net-core-30-runtime-and-sdk-on-raspberry-pi-4) runtime on your Raspberry.
 3. Install PostgreSQL on your Raspberry: use Putty to log in, then run `apt-get install postgresql-11`. Note down the username and password. For the tech savvy: thanks to using Entity Framework, you should be easily able to replace PostgrSQL with any other database, simply by removing PostgreSQL Nuget packages and dropping in MySQL, MicrosoftSQL, or other database provider in.
 4. Create a `weather` database using *pgAdmin* for PostgreSQL
 
 ### Setup
 1. Download this source code with GIT in Visual Studio
 2. Update the appsettings.json in both `net.jancerveny.weatherstation.Web` and `net.jancerveny.weatherstation.WorkerService`, and replace the `<REPLACE>` strings with your own to reflect your local Philips HUE bridge and IP Address. 
-   TODO: Describe how to generate Philips HUE API key. For now, see [this link]([Install .NET Core 3.1](https://edi.wang/post/2019/9/29/setup-net-core-30-runtime-and-sdk-on-raspberry-pi-4) ) and temporarily overwrite `HomeController.cs`' `Index` method to generate it for you. 
+
+   *TODO:* Describe how to generate Philips HUE API key. For now, see [this link](https://github.com/Q42/Q42.HueApi#bridge) and temporarily overwrite `HomeController.cs`' `Index` method to generate it for you. 
+
 3. Fill in the `ConnectionStrings` for your Raspberry PI PostgreSQL host in *both projects'* `appsettings.json` - replace the username and password parameters with your own database username and password. Then follow [this tutorial](http://www.postgresonline.com/journal/archives/38-PuTTY-for-SSH-Tunneling-to-PostgreSQL-Server.html) to set up a Putty SSH tunnel to allow your computer during build to connect to your Raspberry PI's new PostgreSQL database. Just follow the pictures. No worries, nothing needs to permanently run on your computer - this is a one-time action only.
 4. Make sure Putty with a SSH tunnel set up is running. Now open *View/Other Windows/Package Manager Console* panel in VisualStudio. Enter this command: `Update-Database -s "net.jancerveny.weatherstation.Client.Web" -p "net.jancerveny.weatherstation.DataLayer" -c WeatherDbContext`. This should update your Raspberry PI database and create all required tables.
 5. Publish *both projects* as Deployment Mode: *Framework-Dependend*, and Target Runtime: *Portable*
@@ -82,7 +84,7 @@ Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
 WantedBy=multi-user.target
 ```
 9. Run `sudo systemctl start weather-web` and `sudo systemctl start weather-worker` respectively.
-10. You need to  set up the HTTP server (that's NginX, installed in Required prerequisities as a part of point 2.) to serve the outputs of the web service we just created above. Enter `sudo nano /etc/nginx/sites-available/default`, and replace all contents (if you aren't running anything else that you'd be aware of) with:
+10. You need to  set up the HTTP server (that's NginX, installed in Required prerequisities as a part of [point 2](#netcoreruntimeinstall).) to serve the outputs of the web service we just created above. Enter `sudo nano /etc/nginx/sites-available/default`, and replace all contents (if you aren't running anything else that you'd be aware of) with:
 ```
 server {
     listen        80 default_server;
@@ -107,7 +109,7 @@ server {
 ```
 11. Try accessing **http://<Your Rasberry PI's IP address>**, and you should see a page [like my own](https://weather.jancerveny.net). If you made it this far, congratulations! If not, [get in touch with me](https://www.jancerveny.net).
 
-### Making the temperatures accessible from anywhere, on the internet (WAN)
+### Making the temperatures chart accessible from anywhere, on the internet (WAN)
 I will describe what needs to be done in broad terms, because the settings will be individual at this point.
 1. Get a static IP address from your internet provider, if you can. I won't cover dynamic dns setup in this tutorial.
 2. Set a static [local IP address to your Raspberry PI](https://thepihut.com/blogs/raspberry-pi-tutorials/how-to-give-your-raspberry-pi-a-static-ip-address-update), so the routing works even after Raspberry/router restart  or in case of power outtage.
